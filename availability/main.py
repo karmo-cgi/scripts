@@ -242,7 +242,7 @@ def get_open_prs(
     ]
 
 BOT_PATTERN = re.compile(
-    r"(dependabot|renovate|github-actions|bot$)",
+    r"(dependabot|renovate|github-actions|bot|copilot-pull-request-reviewer$)",
     re.IGNORECASE,
 )
 
