@@ -7,7 +7,9 @@ import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from typing import Any
-from pathlib import Path
+
+class UserError(Exception):
+    """An error whose message can be shown directly to the user."""
 
 def load_dotenv() -> None:
     env_file = os.path.join(
@@ -97,6 +99,14 @@ def gh_graphql(query: str) -> dict[str, Any]:
 
 def get_repo() -> tuple[str, str]:
     """Get owner and repository name from git origin."""
+    check = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        capture_output=True,
+        text=True,
+    )
+    if check.returncode != 0 or check.stdout.strip() != "true":
+        raise UserError("Current directory is not inside a Git repository.")
+
     remote = run(["git", "remote", "get-url", "origin"])
     remote = remote.rstrip("/")
 
@@ -523,4 +533,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except UserError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
